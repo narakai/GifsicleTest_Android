@@ -18,7 +18,7 @@ class LuckyWheelView @JvmOverloads constructor(
     private var isSpinning = false
     private val pointerPath = Path()
     private var targetNumber: Int = 0
-    private var debugText: String = "Target: -"
+    private var debugText: String = "我知道你会中的是: -"
 
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val rect = RectF()
@@ -27,6 +27,7 @@ class LuckyWheelView @JvmOverloads constructor(
     private var radius = 0f
     private var currentRotation = 0f
     private val sectors = listOf("1", "2", "3", "4", "5", "6")
+    private val prizes = listOf("iphone16", "switch", "小米SU7", "PS5", "幸运奖", "啥都没")
     private val colors = listOf(
         Color.RED, Color.GREEN, Color.BLUE,
         Color.YELLOW, Color.CYAN, Color.MAGENTA
@@ -34,9 +35,11 @@ class LuckyWheelView @JvmOverloads constructor(
 
     init {
         currentRotation = 0f
+        setupPointerPath()
     }
 
     private fun setupPointerPath() {
+        pointerPath.reset()
         pointerPath.moveTo(0f, -radius)
         pointerPath.lineTo(-20f, -radius + 50)
         pointerPath.lineTo(20f, -radius + 50)
@@ -49,19 +52,14 @@ class LuckyWheelView @JvmOverloads constructor(
         }
 
         this.targetNumber = targetNumber
-        debugText = "Target: $targetNumber"
+        debugText = "我知道你会中的是: ${prizes[targetNumber - 1]}"
         isSpinning = true
 
-        Log.d(
-            "TAG",
-            "Spinning to target number: ${targetNumber}"
-        )
+        Log.d("TAG", "Spinning to target number: $targetNumber (${prizes[targetNumber - 1]})")
 
         if (targetNumber !in 1..6) {
             throw IllegalArgumentException("Target number must be between 1 and 6")
         }
-
-        isSpinning = true
 
         // 确保当前角度在0-360度范围内
         currentRotation %= 360f
@@ -115,13 +113,13 @@ class LuckyWheelView @JvmOverloads constructor(
 
         // 绘制扇区文字
         paint.color = Color.WHITE
-        paint.textSize = radius * 0.2f
+        paint.textSize = radius * 0.15f
         paint.textAlign = Paint.Align.CENTER
         for (i in sectors.indices) {
             val angle = (i * sectorAngle + sectorAngle / 2 + effectiveRotation) * Math.PI / 180
             val x = (centerX + radius * 0.6f * Math.cos(angle)).toFloat()
             val y = (centerY + radius * 0.6f * Math.sin(angle)).toFloat() + paint.textSize / 3
-            canvas.drawText(sectors[i], x, y, paint)
+            canvas.drawText(prizes[i], x, y, paint)
         }
 
         // 绘制指针
