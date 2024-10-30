@@ -16,6 +16,9 @@ class LuckyWheelView @JvmOverloads constructor(
 ) : View(context, attrs, defStyleAttr) {
 
     private var isSpinning = false
+    private val pointerPath = Path()
+    private var targetNumber: Int = 0
+    private var debugText: String = "Target: -"
 
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val rect = RectF()
@@ -33,19 +36,21 @@ class LuckyWheelView @JvmOverloads constructor(
         currentRotation = 0f
     }
 
-    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
-        super.onSizeChanged(w, h, oldw, oldh)
-        centerX = w / 2f
-        centerY = h / 2f
-        radius = min(w, h) / 2f * 0.8f
-        rect.set(centerX - radius, centerY - radius, centerX + radius, centerY + radius)
+    private fun setupPointerPath() {
+        pointerPath.moveTo(0f, -radius)
+        pointerPath.lineTo(-20f, -radius + 50)
+        pointerPath.lineTo(20f, -radius + 50)
+        pointerPath.close()
     }
 
     fun spin(targetNumber: Int, duration: Long = 5000) {
         if (isSpinning) {
-            // 如果已经在旋转，直接返回，不做任何操作
             return
         }
+
+        this.targetNumber = targetNumber
+        debugText = "Target: $targetNumber"
+        isSpinning = true
 
         Log.d(
             "TAG",
@@ -121,11 +126,24 @@ class LuckyWheelView @JvmOverloads constructor(
 
         // 绘制指针
         paint.color = Color.BLACK
-        val pointerPath = Path()
-        pointerPath.moveTo(centerX, centerY - radius)
-        pointerPath.lineTo(centerX - 20, centerY - radius + 50)
-        pointerPath.lineTo(centerX + 20, centerY - radius + 50)
-        pointerPath.close()
+        canvas.save()
+        canvas.translate(centerX, centerY)
         canvas.drawPath(pointerPath, paint)
+        canvas.restore()
+
+        // 绘制调试文本
+        paint.color = Color.CYAN
+        paint.textSize = 40f
+        paint.textAlign = Paint.Align.LEFT
+        canvas.drawText(debugText, 20f, height - 20f, paint)
+    }
+
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        centerX = w / 2f
+        centerY = h / 2f
+        radius = min(w, h) / 2f * 0.8f
+        rect.set(centerX - radius, centerY - radius, centerX + radius, centerY + radius)
+        setupPointerPath()
     }
 }
