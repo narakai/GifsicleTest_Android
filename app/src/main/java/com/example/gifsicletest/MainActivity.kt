@@ -1,11 +1,12 @@
 package com.example.gifsicletest
 
 import GlassEffectView
+import LuckyWheelView
 import android.os.Bundle
 import android.util.Log
+import android.view.ViewGroup
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -19,49 +20,15 @@ import java.io.File
 import java.util.Locale
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.graphics.*
-import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.background
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.compose.ui.zIndex
-
-// 玻璃效果修饰符
-fun Modifier.glassEffect(
-    alpha: Float = 0.8f,
-    spacing: Float = 8f,
-) = this.drawWithCache {
-    val verticalLines = mutableListOf<Float>()
-    var x = 0f
-    while (x < size.width) {
-        verticalLines.add(x)
-        x += spacing
-    }
-
-    onDrawBehind {
-        // 绘制半透明背景
-        drawRect(
-            color = Color.White.copy(alpha = 0.2f),
-            blendMode = BlendMode.Screen
-        )
-
-        // 绘制垂直线条
-        for (lineX in verticalLines) {
-            drawLine(
-                color = Color.White.copy(alpha = alpha),
-                start = Offset(lineX, 0f),
-                end = Offset(lineX, size.height),
-                strokeWidth = 1f,
-                blendMode = BlendMode.Screen
-            )
-        }
-    }
-}
+import kotlin.random.Random
 
 // 修改 MainActivity
 class MainActivity : ComponentActivity() {
+    private lateinit var luckyWheelView: LuckyWheelView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -91,6 +58,29 @@ class MainActivity : ComponentActivity() {
                         ) {
                             Greeting("Android")
                             ClickButton(onClickEvent = ::onClickHandler)
+
+                            // Add LuckyWheelView here
+                            AndroidView(
+                                factory = { context ->
+                                    LuckyWheelView(context).apply {
+                                        layoutParams = ViewGroup.LayoutParams(600, 600)
+                                    }
+                                },
+                                modifier = Modifier.padding(top = 16.dp)
+                            ) { view ->
+                                luckyWheelView = view
+                            }
+
+                            // Add a button to spin the wheel
+                            Button(
+                                onClick = {
+                                    val targetNumber = (1..6).random()
+                                    luckyWheelView.spin(targetNumber)
+                                },
+                                modifier = Modifier.padding(top = 16.dp)
+                            ) {
+                                Text("Spin the Wheel")
+                            }
                         }
                     }
                 }
